@@ -1,0 +1,23 @@
+# Load the existing Excel file
+$excelFilePath = "C:\Path\To\Your\Existing\File.xlsx"
+$excel = New-Object -ComObject Excel.Application
+$workbook = $excel.Workbooks.Open($excelFilePath)
+$sheet = $workbook.Sheets.Item(1)
+
+# Get the current date
+$currentDate = Get-Date
+
+# Scan each row in the Excel file
+for ($row = 2; $row -le $sheet.UsedRange.Rows.Count; $row++) {
+    $certName = $sheet.Cells.Item($row, 1).Text
+    $expiryDate = [DateTime]::ParseExact($sheet.Cells.Item($row, 2).Text, "yyyy-MM-dd", $null)
+
+    $daysRemaining = ($expiryDate - $currentDate).Days
+    if ($daysRemaining -le 30) {
+        Write-Host "Certificate '$certName' will expire in $daysRemaining days."
+    }
+}
+
+# Close the workbook
+$workbook.Close()
+$excel.Quit()
