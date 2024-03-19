@@ -1,0 +1,130 @@
+@echo off
+echo Checking login status...
+echo ...................................
+echo ....................................................
+REM Initialize script
+setlocal enabledelayedexpansion
+
+REM ############## Check if current logon user contains "keyword" ##############
+set "currentLogonUsername=%username%"
+
+REM ############## function switch ###############
+echo Please input B/R to select [B]ackup or [R]estore function.
+set /p functionControl=
+if %functionControl%==B goto :BackupFunction
+if %functionControl%==b goto :BackupFunction
+if %functionControl%==R goto :RestoreFunction
+if %functionControl%==r goto :RestoreFunction
+goto end
+
+:BackupFunction
+echo !currentLogonUsername! | findstr /I "Tony" >nul
+if errorlevel 1 (
+	echo You are not login as Tony! Please make sure N dirve is mapped and input backup username.
+	echo: 
+	set /p currentLogonUsername="Please enter backup username: "
+	echo Backup user is set to !currentLogonUsername!. Press any key to start backup.
+	pause
+	call :COPYHeadless
+	goto :eof
+	echo Finished, please confirm files are fully backup to your personal drive.
+) else (
+	echo [[[[[You are login as !currentLogonUsername!.]]]]], press any key to start backup.
+	pause
+	call :COPY
+	goto :eof
+	echo Finished, please confirm files are fully backup to your personal drive.
+)
+
+
+REM write the copy function below COPY
+:COPYHeadless
+set backupFolder="PLEASE INPUT THE PATH HERE"
+
+set chromeBookmark="C:\users\%username%\appdata\local\google\chrome\user data\default"
+set EdgeFavourite="C:\users\%username%\appdata\local\microsoft\edge\user data\default"
+set PersonalStamp="C:\users\%username%\AppData\Roaming\Adobe\Acrobat\11.0\Stamps"
+set PersonalStampDC="C:\users\%username%\AppData\Roaming\Adobe\Acrobat\DC\Stamps"
+set Desktop="C:\users\%username%\desktop"
+set Documents="C:\users\%username%\documents"
+set Downloads="C:\users\%username%\downloads"
+set Images="C:\users\%username%\pictures"
+
+robocopy %chromeBookmark% %backupFolder%\ChromeBookmark bookmarks /r:1 /w:2
+robocopy %EdgeFavourite% %backupFolder%\EdgeFavourite bookmarks /r:1 /w:2
+robocopy %PersonalStamp% %backupFolder%\PersonalStamp /e /r:1 /w:2
+robocopy %PersonalStampDC% %backupFolder%\PersonalStamp /e /r:1 /w:2
+robocopy %Desktop% %backupFolder%\Desktop /e /r:1 /w:2
+robocopy %Documents% %backupFolder%\Documents /e /r:1 /w:2
+robocopy %Downloads% %backupFolder%\Downloads /e /r:1 /w:2
+robocopy %Images% %backupFolder%\Images /e /r:1 /w:2
+goto BackupFinished
+
+
+:COPY
+set backupFolder="PLEASE INPUT THE PATH HERE"
+
+set chromeBookmark="C:\users\%username%\appdata\local\google\chrome\user data\default"
+set EdgeFavourite="C:\users\%username%\appdata\local\microsoft\edge\user data\default"
+set PersonalStamp="C:\users\%username%\AppData\Roaming\Adobe\Acrobat\11.0\Stamps"
+set PersonalStampDC="C:\users\%username%\AppData\Roaming\Adobe\Acrobat\DC\Stamps"
+set Desktop="C:\users\%username%\desktop"
+set Documents="C:\users\%username%\documents"
+set Downloads="C:\users\%username%\downloads"
+set Images="C:\users\%username%\pictures"
+
+robocopy %chromeBookmark% %backupFolder%\ChromeBookmark bookmarks /r:1 /w:2
+robocopy %EdgeFavourite% %backupFolder%\EdgeFavourite bookmarks /r:1 /w:2
+robocopy %PersonalStamp% %backupFolder%\PersonalStamp /e /r:1 /w:2
+robocopy %PersonalStampDC% %backupFolder%\PersonalStamp /e /r:1 /w:2
+robocopy %Desktop% %backupFolder%\Desktop /e /r:1 /w:2
+robocopy %Documents% %backupFolder%\Documents /e /r:1 /w:2
+robocopy %Downloads% %backupFolder%\Downloads /e /r:1 /w:2
+robocopy %Images% %backupFolder%\Images /e /r:1 /w:2
+goto BackupFinished
+
+REM=======================================================================================================================
+:RestoreFunction
+echo [[[[[You are login as !currentLogonUsername!.]]]]], press any key to start restore.
+pause
+if exist "BACK FOLDER PATH" (
+	set "RestoreFolder=PLEASE SET THE RESTORE PATH HERE"
+) else (
+	set "RestoreFolder=PLEASE SET THE RESTORE PATH HERE"
+)
+
+set chromeBookmark="C:\users\%username%\appdata\local\google\chrome\user data\default"
+set EdgeFavourite="C:\users\%username%\appdata\local\microsoft\edge\user data\default"
+set PersonalStamp="C:\users\%username%\AppData\Roaming\Adobe\Acrobat\11.0\Stamps"
+set PersonalStampDC="C:\users\%username%\AppData\Roaming\Adobe\Acrobat\DC\Stamps"
+set Desktop="C:\users\%username%\desktop"
+set Documents="C:\users\%username%\documents"
+set Downloads="C:\users\%username%\downloads"
+set Images="C:\users\%username%\pictures"
+
+robocopy %RestoreFolder%\ChromeBookmark %chromeBookmark% bookmarks /r:1 /w:2
+robocopy %RestoreFolder%\EdgeFavourite %EdgeFavourite% bookmarks /r:1 /w:2
+robocopy %RestoreFolder%\PersonalStamp %PersonalStamp% /e /r:1 /w:2
+robocopy %RestoreFolder%\PersonalStamp %PersonalStampDC% /e /r:1 /w:2
+robocopy %RestoreFolder%\Desktop %Desktop% /e /r:1 /w:2
+robocopy %RestoreFolder%\Documents %Documents% /e /r:1 /w:2
+robocopy %RestoreFolder%\Downloads %Downloads% /e /r:1 /w:2
+robocopy %RestoreFolder%\Images %Images% /e /r:1 /w:2
+goto restoreFinished
+
+endlocal
+
+:BackupFinished
+echo Finished, please confirm files are fully backup to your personal drive.
+pause
+goto end
+
+:restoreFinished
+echo Restore finished.
+pause
+goto end
+
+:end
+echo End process
+pause
+
