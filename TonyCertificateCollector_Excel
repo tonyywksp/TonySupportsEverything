@@ -1,0 +1,33 @@
+# Set the certificate name prefix
+$certNamePrefix = "certName"
+
+# Get certificates from the LocalMachine/My store
+$certificates = Get-ChildItem -Path Cert:\LocalMachine\My
+
+# Filter certificates based on the prefix
+$filteredCertificates = $certificates | Where-Object { $_.Subject -like "*$certNamePrefix*" }
+
+# Load the existing Excel file
+$excelFilePath = "C:\Path\To\Your\Existing\File.xlsx"
+$excel = New-Object -ComObject Excel.Application
+$workbook = $excel.Workbooks.Open($excelFilePath)
+$sheet = $workbook.Sheets.Item(1)
+
+# Record certificate details in the Excel file
+$row = 2
+foreach ($cert in $filteredCertificates) {
+    $certName = $cert.Subject
+    $expiryDate = $cert.NotAfter
+
+    $sheet.Cells.Item($row, 1) = $certName
+    $sheet.Cells.Item($row, 2) = $expiryDate
+
+    $row++
+}
+
+# Save and close the workbook
+$workbook.Save()
+$workbook.Close()
+$excel.Quit()
+
+Write-Host "Certificate details added to $excelFilePath"
