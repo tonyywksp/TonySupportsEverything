@@ -1,0 +1,30 @@
+# Set the certificate name prefix
+$certNamePrefix = "lt****"
+
+# Get certificates from the LocalMachine/My store
+$certificates = Get-ChildItem -Path Cert:\LocalMachine\My
+
+# Filter certificates based on the prefix
+$filteredCertificates = $certificates | Where-Object { $_.Subject -like "$certNamePrefix*" }
+
+# Create an XML document
+$xmlDocument = New-Object System.Xml.XmlDocument
+$xmlRoot = $xmlDocument.CreateElement("Certificates")
+$xmlDocument.AppendChild($xmlRoot)
+
+# Record certificate details in the XML
+foreach ($cert in $filteredCertificates) {
+    $certName = $cert.Subject
+    $expiryDate = $cert.NotAfter
+
+    $certElement = $xmlDocument.CreateElement("Certificate")
+    $certElement.SetAttribute("Name", $certName)
+    $certElement.SetAttribute("ExpiryDate", $expiryDate.ToString("yyyy-MM-dd"))
+    $xmlRoot.AppendChild($certElement)
+}
+
+# Save the XML to a file
+$xmlFilePath = "Certificates.xml"
+$xmlDocument.Save($xmlFilePath)
+
+Write-Host "Certificate details saved to $xmlFilePath"
