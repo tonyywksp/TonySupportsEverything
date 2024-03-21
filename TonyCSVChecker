@@ -1,0 +1,32 @@
+# Define the directory containing the CSV files
+$directory = 'C:\path\to\your\csv\files'
+
+# Get the current date
+$currentDate = Get-Date
+
+# Initialize an array to hold the CSV files that have an expiry date in 30 days
+$csvFilesToExpire = @()
+
+# Get all CSV files in the directory
+$csvFiles = Get-ChildItem -Path $directory -Filter '*lt0hkg*.csv'
+
+# Check each CSV file
+foreach ($csvFile in $csvFiles) {
+    # Import the CSV file
+    $csvContent = Import-Csv -Path $csvFile.FullName
+
+    # Check each row in the CSV file
+    foreach ($row in $csvContent) {
+        # Parse the expiry date
+        $expiryDate = [datetime]::Parse($row.expirydate)
+
+        # If the expiry date is in 30 days, add the CSV file to the array
+        if (($expiryDate - $currentDate).Days -le 30) {
+            $csvFilesToExpire += @{ 'File' = $csvFile.Name; 'ExpiryDate' = $expiryDate }
+            break
+        }
+    }
+}
+
+# Export the CSV files to a new CSV file
+$csvFilesToExpire | Export-Csv -Path 'C:\path\to\expiry_report.csv' -NoTypeInformation
