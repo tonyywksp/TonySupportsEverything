@@ -1,28 +1,31 @@
-# Define the directory containing the CSV files
-$directory = 'C:\path\to\your\csv\files'
+# Import the required module for Excel manipulation
+Import-Module ImportExcel -ErrorAction Stop
+
+# Define the output file
+$outputFile = "ExpiringFiles.xlsx"
 
 # Get the current date
 $currentDate = Get-Date
 
-# Initialize an array to hold the CSV files that have an expiry date in 3000 days
-$csvFilesToExpire = @()
+# Initialize an empty array to hold the data
+$data = @()
 
-# Get all CSV files in the directory
-$csvFiles = Get-ChildItem -Path $directory -Filter 'lt0hkg*.csv'
+# Get all csv files starting with "lt0hkg"
+Get-ChildItem -Filter "lt0hkg*.csv" | ForEach-Object {
+    $csv = Import-Csv $_.FullName
 
-# Check each CSV file
-foreach ($csvFile in $csvFiles) {
-    # Import the CSV file
-    $csvContent = Import-Csv -Path $csvFile.FullName
+    # Get the expiry date from cell A2
+    $expiryDate = [datetime]::ParseExact($csv[1].A2, "dd/MM/yyyy", $null)
 
-    # Get the expiry date from the A2 cell
-    $expiryDate = [datetime]::Parse($csvContent[1].A)
-
-    # If the expiry date is in 3000 days, add the CSV file to the array
+    # Check if the expiry date is within 3000 days from now
     if (($expiryDate - $currentDate).Days -le 3000) {
-        $csvFilesToExpire += @{ 'File' = $csvFile.Name; 'ExpiryDate' = $expiryDate }
+        # Add the file name and expiry date to the data array
+        $data += New-Object PSObject -Property @{
+            "File Name" = $_.Name
+            "Expiry Date" = $expiryDate
+        }
     }
 }
 
-# Export the CSV files to a new CSV file
-$csvFilesToExpire | Export-Csv -Path 'C:\path\to\expiry_report.csv' -NoTypeInformation
+# Export the data to an Excel file
+$data | Export-Excel $outputFile -AutoSize
