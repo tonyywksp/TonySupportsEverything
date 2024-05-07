@@ -1,33 +1,51 @@
 @echo off
-echo Checking login status...
-echo ...................................
-echo ....................................................
+echo.
+echo.
+echo.
+echo ==============Tony backup and restore program==============
+echo ===========================================================
+echo.
+echo.
+echo Checking login status......
+echo .......................................
+echo ........................................................
+echo.
+echo.
 REM Initialize script
 setlocal enabledelayedexpansion
 
-REM ############## Check if current logon user contains "keyword" ##############
 set "currentLogonUsername=%username%"
 
-REM ############## function switch ###############
+REM function switch
 echo Please input B/R to select [B]ackup or [R]estore function.
 set /p functionControl=
-if %functionControl%==B goto :BackupFunction
-if %functionControl%==b goto :BackupFunction
-if %functionControl%==R goto :RestoreFunction
-if %functionControl%==r goto :RestoreFunction
+if %functionControl%==B (
+set mode="backupMode"
+goto :BackupFunction)
+if %functionControl%==b (
+set mode="backupMode"
+goto :BackupFunction)
+if %functionControl%==R (
+set mode="restoreMode"
+goto :DefinePath)
+if %functionControl%==r (
+set mode="restoreMode"
+goto :DefinePath)
 goto end
 
 :BackupFunction
-echo !currentLogonUsername! | findstr /I "Tony" >nul
+REM ==========Check if current user contains "****"==========
+echo !currentLogonUsername! | findstr /I "****" >nul
 if errorlevel 1 (
-	echo You are not login as Tony! Please make sure N dirve is mapped and input backup username.
+	echo You are not login as "****" user! Please make sure destination dirve is mapped and input profile name "****".
 	echo: 
-	set /p currentLogonUsername="Please enter backup username: "
+	set /p currentLogonUsername="Please enter user profile name: "
+	set "backupUsername=currentLogonUsername"
 	echo Backup user is set to !currentLogonUsername!. Press any key to start backup.
 	pause
 	call :COPYHeadless
 	goto :eof
-	echo Finished, please confirm files are fully backup to your personal drive.
+	echo Finished, please confirm files are fully backup to your destination drive.
 ) else (
 	echo [[[[[You are login as !currentLogonUsername!.]]]]], press any key to start backup.
 	pause
@@ -36,80 +54,81 @@ if errorlevel 1 (
 	echo Finished, please confirm files are fully backup to your personal drive.
 )
 
-
 REM write the copy function below COPY
 :COPYHeadless
-set backupFolder="PLEASE INPUT THE PATH HERE"
-
-set chromeBookmark="C:\users\%username%\appdata\local\google\chrome\user data\default"
-set EdgeFavourite="C:\users\%username%\appdata\local\microsoft\edge\user data\default"
-set PersonalStamp="C:\users\%username%\AppData\Roaming\Adobe\Acrobat\11.0\Stamps"
-set PersonalStampDC="C:\users\%username%\AppData\Roaming\Adobe\Acrobat\DC\Stamps"
-set Desktop="C:\users\%username%\desktop"
-set Documents="C:\users\%username%\documents"
-set Downloads="C:\users\%username%\downloads"
-set Images="C:\users\%username%\pictures"
-
-robocopy %chromeBookmark% %backupFolder%\ChromeBookmark bookmarks /r:1 /w:2
-robocopy %EdgeFavourite% %backupFolder%\EdgeFavourite bookmarks /r:1 /w:2
-robocopy %PersonalStamp% %backupFolder%\PersonalStamp /e /r:1 /w:2
-robocopy %PersonalStampDC% %backupFolder%\PersonalStamp /e /r:1 /w:2
-robocopy %Desktop% %backupFolder%\Desktop /e /r:1 /w:2
-robocopy %Documents% %backupFolder%\Documents /e /r:1 /w:2
-robocopy %Downloads% %backupFolder%\Downloads /e /r:1 /w:2
-robocopy %Images% %backupFolder%\Images /e /r:1 /w:2
-goto BackupFinished
-
+set backupFolder="******write Your destination path here******\!currentLogonUsername!"
+goto DefinePath
 
 :COPY
-set backupFolder="PLEASE INPUT THE PATH HERE"
+set backupFolder="******write Your destination path here******\!currentLogonUsername!"
+goto DefinePath
 
-set chromeBookmark="C:\users\%username%\appdata\local\google\chrome\user data\default"
-set EdgeFavourite="C:\users\%username%\appdata\local\microsoft\edge\user data\default"
-set PersonalStamp="C:\users\%username%\AppData\Roaming\Adobe\Acrobat\11.0\Stamps"
-set PersonalStampDC="C:\users\%username%\AppData\Roaming\Adobe\Acrobat\DC\Stamps"
-set Desktop="C:\users\%username%\desktop"
-set Documents="C:\users\%username%\documents"
-set Downloads="C:\users\%username%\downloads"
-set Images="C:\users\%username%\pictures"
+:DefinePath
+REM ----------------------------------1. Define path----------------------------------------
+set chromeBookmark="C:\users\!currentLogonUsername!\appdata\local\google\chrome\user data\default"
+set EdgeFavourite="C:\users\!currentLogonUsername!\appdata\local\microsoft\edge\user data\default"
+set PersonalStamp="C:\users\!currentLogonUsername!\AppData\Roaming\Adobe\Acrobat\11.0\Stamps"
+set PersonalStampDC="C:\users\!currentLogonUsername!\AppData\Roaming\Adobe\Acrobat\DC\Stamps"
+set Desktop="C:\users\!currentLogonUsername!\desktop"
+set DesktopLayout="C:\users\!currentLogonUsername!\Appdata\Local\Microsoft\Windows\Shell"
+set Documents="C:\users\!currentLogonUsername!\documents"
+set Downloads="C:\users\!currentLogonUsername!\downloads"
+set Images="C:\users\!currentLogonUsername!\pictures"
+set Recent="C:\users\!currentLogonUsername!\AppData\Roaming\Microsoft\Windows\Recent"
+set OutlookTemplate="C:\users\!currentLogonUsername!\Appdata\Roaming\Microsoft\Templates"
+set LotusNote="C:\users\!currentLogonUsername!\Appdata\Local\IBM"
+set Taskbar="C:\Users\!currentLogonUsername!\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned"
+REM -----------------------------------------------------------------------------------------
+if %mode%=="backupMode" (
+	goto COPYMain
+)else (
+	goto RestoreFunction
+)
 
+REM ----------------------2. This is the main thread for backup function----------------------------
+:COPYMain
 robocopy %chromeBookmark% %backupFolder%\ChromeBookmark bookmarks /r:1 /w:2
 robocopy %EdgeFavourite% %backupFolder%\EdgeFavourite bookmarks /r:1 /w:2
 robocopy %PersonalStamp% %backupFolder%\PersonalStamp /e /r:1 /w:2
 robocopy %PersonalStampDC% %backupFolder%\PersonalStamp /e /r:1 /w:2
 robocopy %Desktop% %backupFolder%\Desktop /e /r:1 /w:2
+robocopy %DesktopLayout% %backupFolder%\DesktopLayout /e /r:1 /w:2
 robocopy %Documents% %backupFolder%\Documents /e /r:1 /w:2
 robocopy %Downloads% %backupFolder%\Downloads /e /r:1 /w:2
 robocopy %Images% %backupFolder%\Images /e /r:1 /w:2
+robocopy %Recent% %backupFolder%\Recent /e /r:1 /w:2
+robocopy %OutlookTemplate% %backupFolder%\OutlookTemplate /e /r:1 /w:2
+robocopy %LotusNote% %backupFolder%\LotusNote /e /r:1 /w:2
+robocopy %Taskbar% %backupFolder%\Taskbar /e /r:1 /w:2
+REM -----------------------------------------------------------------------------------------------
+
 goto BackupFinished
 
-REM=======================================================================================================================
 :RestoreFunction
 echo [[[[[You are login as !currentLogonUsername!.]]]]], press any key to start restore.
 pause
-if exist "BACK FOLDER PATH" (
-	set "RestoreFolder=PLEASE SET THE RESTORE PATH HERE"
+if exist "******write Your destination path here******\!currentLogonUsername!" (
+	set "RestoreFolder=******write Your destination path here******\!currentLogonUsername!"
 ) else (
-	set "RestoreFolder=PLEASE SET THE RESTORE PATH HERE"
+	set "RestoreFolder=******write Your destination path here******\Headless\!currentLogonUsername!"
 )
 
-set chromeBookmark="C:\users\%username%\appdata\local\google\chrome\user data\default"
-set EdgeFavourite="C:\users\%username%\appdata\local\microsoft\edge\user data\default"
-set PersonalStamp="C:\users\%username%\AppData\Roaming\Adobe\Acrobat\11.0\Stamps"
-set PersonalStampDC="C:\users\%username%\AppData\Roaming\Adobe\Acrobat\DC\Stamps"
-set Desktop="C:\users\%username%\desktop"
-set Documents="C:\users\%username%\documents"
-set Downloads="C:\users\%username%\downloads"
-set Images="C:\users\%username%\pictures"
-
+REM ----------------------3. This is the main thread for restore function----------------------------
 robocopy %RestoreFolder%\ChromeBookmark %chromeBookmark% bookmarks /r:1 /w:2
 robocopy %RestoreFolder%\EdgeFavourite %EdgeFavourite% bookmarks /r:1 /w:2
 robocopy %RestoreFolder%\PersonalStamp %PersonalStamp% /e /r:1 /w:2
 robocopy %RestoreFolder%\PersonalStamp %PersonalStampDC% /e /r:1 /w:2
 robocopy %RestoreFolder%\Desktop %Desktop% /e /r:1 /w:2
+robocopy %RestoreFolder%\DesktopLayout %DesktopLayout% /e /r:1 /w:2
 robocopy %RestoreFolder%\Documents %Documents% /e /r:1 /w:2
 robocopy %RestoreFolder%\Downloads %Downloads% /e /r:1 /w:2
 robocopy %RestoreFolder%\Images %Images% /e /r:1 /w:2
+robocopy %RestoreFolder%\Recent %Recent% /e /r:1 /w:2
+robocopy %RestoreFolder%\OutlookTemplate %OutlookTemplate%/e /r:1 /w:2
+robocopy %RestoreFolder%\LotusNote %LotusNote% /e /r:1 /w:2
+robocopy %RestoreFolder%\Taskbar %Taskbar% /e /r:1 /w:2
+REM -------------------------------------------------------------------------------------------------
+
 goto restoreFinished
 
 endlocal
